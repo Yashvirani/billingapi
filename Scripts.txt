@@ -1,0 +1,22 @@
+create table customer(
+	customer_id uuid PRIMARY KEY,
+	name_ VARCHAR(50),
+	email VARCHAR(50),
+	mobile_number VARCHAR(14),
+	pwd VARCHAR(50),
+	role_ VARCHAR(30),
+	create_dt date
+);
+
+create table authorities(
+	id_ uuid PRIMARY KEY,
+	customer_id uuid,
+	name_ VARCHAR(40),
+	FOREIGN KEY(customer_id) REFERENCES customer(customer_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+insert into customer (customer_id,name_,email,mobile_number,pwd,role_,create_dt)
+values ('61e73f03-b100-4e1b-b331-d6b8a43b7bbb','Yash','yash@yash.com','8728382888','$2a$10$270nAI/Osa/azPuG.EkRF.PNQN6ywDqLxmwDkcAlAbTJnAsRycPmO','admin',current_date);
+
+insert into authorities(id_,customer_id,name_)
+values ('229825f1-74dd-4365-89ca-4d3a3cab91d8','61e73f03-b100-4e1b-b331-d6b8a43b7bbb','ROLE_USER');
