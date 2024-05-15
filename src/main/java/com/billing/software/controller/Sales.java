@@ -9,4 +9,9 @@ public class Sales {
     public String getSalesData(){
         return "sales";
     }
+
+    @GetMapping(path = "/api/something")
+    public String getUserData(){
+        return "something";
+    }
 }

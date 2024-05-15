@@ -1,6 +1,9 @@
 package com.billing.software.config;
 
 import com.billing.software.filters.CsrfCookieFilter;
+import com.billing.software.filters.JWTTokenGeneratorFilter;
+import com.billing.software.filters.JWTTokenValidatorFilter;
+import com.billing.software.filters.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +19,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -26,30 +30,40 @@ public class Config {
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
         requestHandler.setCsrfRequestAttributeName("_csrf");
 
-        http.securityContext((context) -> context.requireExplicitSave(false)).
-                sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS) ).
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).
+        //http.securityContext((context) -> context.requireExplicitSave(false)).
+                //sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS) ).
+          //http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().
                 cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration config = new CorsConfiguration();
-//                        config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
-                        config.setAllowedOrigins(Collections.singletonList("*"));
+                        config.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                        //config.setAllowedOrigins(Collections.singletonList("*"));
                         config.setAllowedMethods(Collections.singletonList("*"));
                         config.setAllowCredentials(true);
                         config.setAllowedHeaders(Collections.singletonList("*"));
+                        config.setExposedHeaders(Arrays.asList("Authorization"));
                         config.setMaxAge(3600L);
                         return config;
                     }
                 })).
-                csrf((csrf) -> csrf.csrfTokenRequestHandler(requestHandler).ignoringRequestMatchers("/contact","/register")
+                csrf((csrf) -> csrf.csrfTokenRequestHandler(requestHandler).ignoringRequestMatchers("/contact","/api/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests((requests)->requests
+                        .requestMatchers("/api/register").permitAll()
+                        .requestMatchers("/api/user").permitAll()
+
                 .requestMatchers("/api/sales").hasRole("ADMIN")
-                .requestMatchers("/myBalance").authenticated()
+                        .requestMatchers("/api/something").hasRole("ADMIN")
+                        .requestMatchers("/api/details").hasRole("ADMIN")
                 .requestMatchers("/myLoans").authenticated()
                 .requestMatchers("/myCards").authenticated()
-                .requestMatchers("/user").authenticated()
+                //.requestMatchers("/user").authenticated()
                 .requestMatchers("/notices","/contact","/register").permitAll())
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());
