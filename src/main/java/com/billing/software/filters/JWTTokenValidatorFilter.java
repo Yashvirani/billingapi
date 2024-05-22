@@ -35,7 +35,7 @@ public class JWTTokenValidatorFilter  extends OncePerRequestFilter {
                         .build()
                         .parseSignedClaims(jwt)
                         .getPayload();
-                String username = String.valueOf(claims.get("username"));
+                String username = String.valueOf(claims.get("email"));
                 String authorities = (String) claims.get("authorities");
                 Authentication auth = new UsernamePasswordAuthenticationToken(username, null,
                         AuthorityUtils.commaSeparatedStringToAuthorityList(authorities));
@@ -50,7 +50,7 @@ public class JWTTokenValidatorFilter  extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getServletPath().equals("/api/register");
+        return request.getServletPath().equals("/api/login");
     }
 
 }
