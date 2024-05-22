@@ -61,4 +61,9 @@ public class LoginController {
     public Authentication getDetails(){
         return SecurityContextHolder.getContext().getAuthentication();
     }
+
+    @GetMapping(path = "/api/signin")
+    public String Signin(){
+        return "Signed IN";
+    }
 }
